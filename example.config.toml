@@ -1,0 +1,10 @@
+[[domains]]
+domain = "example.com"
+type = "namecheap"
+password = "password"
+
+[[domains]]
+domain = "example.org"
+type = "google"
+username = "username"
+password = "password"

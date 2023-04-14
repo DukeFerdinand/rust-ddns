@@ -3,7 +3,9 @@ mod updater;
 const SETTINGS_EMOJI: &str = "⚙️";
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    dotenvy::dotenv()?;
+
     let ddns_updater = updater::DDNSUpdater::from_env();
 
     println!("{} Initialized ddns updater!", SETTINGS_EMOJI);
@@ -28,4 +30,6 @@ async fn main() {
             }
         }
     }
+
+    Ok(())
 }

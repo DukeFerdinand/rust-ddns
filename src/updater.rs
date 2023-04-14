@@ -33,6 +33,20 @@ impl DDNSUpdater {
         res.text().await
     }
 
+    fn get_split_domain(&self, domain: &str) -> anyhow::Result<(String, String)> {
+        match (domain.contains('.'), domain.matches('.').count()) {
+            (false, _) => anyhow::bail!("Invalid domain: {}", domain),
+            (true, 1) => Ok((String::from("@"), domain.into())),
+            _ => {
+                let mut split = domain.splitn(2, '.');
+                let subdomain = split.next().unwrap_or("@");
+                let domain = split.next().unwrap();
+
+                Ok((subdomain.into(), domain.into()))
+            }
+        }
+    }
+
     async fn update_subdomain(
         &self,
         client: &reqwest::Client,
@@ -71,19 +85,52 @@ impl DDNSUpdater {
 
         let client = reqwest::Client::new();
 
-        // try to split the domain into subdomain and domain
-        // if there is no subdomain, use @ as the subdomain
+        let (subdomain, domain) = self.get_split_domain(domain)?;
 
-        if domain.matches('.').count() > 1 {
-            let mut split = domain.splitn(2, '.');
-            let subdomain = split.next().unwrap();
-            let domain = split.next().unwrap();
+        self.update_subdomain(&client, &subdomain, &domain).await
+    }
+}
 
-            let res = self.update_subdomain(&client, subdomain, domain).await?;
-            Ok(res)
-        } else {
-            let res = self.update_subdomain(&client, "@", domain).await?;
-            Ok(res)
-        }
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    fn test_env() {
+        env::set_var("NAMECHEAP_PASS", "test");
+        env::set_var("NAMECHEAP_DOMAINS", "test.com,test2.com");
+    }
+
+    #[test]
+    fn test_from_env() {
+        test_env();
+
+        let ddns_updater = DDNSUpdater::from_env();
+
+        assert_eq!(ddns_updater.namecheap_pass, "test");
+        assert_eq!(ddns_updater.domains, vec!["test.com", "test2.com"]);
+    }
+
+    #[test]
+    fn test_get_domain_only() {
+        test_env();
+
+        let ddns_updater = DDNSUpdater::from_env();
+
+        assert_eq!(
+            ddns_updater.get_split_domain("test.com").unwrap(),
+            (String::from("@"), String::from("test.com"))
+        );
+    }
+
+    #[test]
+    fn test_get_subdomain() {
+        test_env();
+
+        let ddns_updater = DDNSUpdater::from_env();
+
+        assert_eq!(
+            ddns_updater.get_split_domain("test.test.com").unwrap(),
+            (String::from("test"), String::from("test.com"))
+        );
     }
 }

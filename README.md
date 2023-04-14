@@ -6,11 +6,21 @@ A super simple DDNS updater script using `reqwest` and https://ipify.org.
 
 - Step 1, have a [rustup](https://rustup.rs/) installation
 - Step 2, clone this repo
-- Step 3, populate ENV as follows:
+- Step 3, populate `config.toml` based on the following, filling data as appropriate:
 
-```
-export NAMECHEAP_PASS=add_here
-export NAMECHEAP_DOMAINS=some-doma.in
+```toml
+[[domains]]
+domain = "example.com"
+# subdomain is an optional field
+subdomain = "@"
+domain_type = "Namecheap"
+password = "password"
+
+[[domains]]
+domain = "example.org"
+domain_type = "Google"
+username = "username"
+password = "password"
 ```
 
 - Step 4 (optional), run `cargo test` to test the core parsers in this app

@@ -1,10 +1,10 @@
 [[domains]]
 domain = "example.com"
-type = "namecheap"
+domain_type = "Namecheap"
 password = "password"
 
 [[domains]]
 domain = "example.org"
-type = "google"
+domain_type = "Google"
 username = "username"
 password = "password"

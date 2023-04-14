@@ -6,7 +6,7 @@ const SETTINGS_EMOJI: &str = "⚙️";
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv()?;
 
-    let ddns_updater = updater::DDNSUpdater::from_env();
+    let ddns_updater = updater::DDNSUpdater::from_config(None);
 
     println!("{} Initialized ddns updater!", SETTINGS_EMOJI);
 
@@ -16,16 +16,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         match res {
             Ok(updated) => {
                 if updated {
-                    println!("{} Handling domain: {}", SETTINGS_EMOJI, domain);
+                    println!("✅ Updated domain: {}", domain.domain);
                 } else {
-                    println!(
-                        "{} Domain: {} is already up to date",
-                        SETTINGS_EMOJI, domain
-                    );
+                    println!("⚠️ Domain: {} is already up to date", domain.domain);
                 }
             }
             Err(e) => {
-                println!("{} Failed to update domain: {}", SETTINGS_EMOJI, domain);
+                println!("❌ Failed to update domain: {}", domain.domain);
                 println!("{} Error: {}", SETTINGS_EMOJI, e);
             }
         }
